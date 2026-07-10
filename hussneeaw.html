@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>hussneeaw</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0a;--bg2:#111;--bg3:#161616;--bg4:#1c1c1c;--border:#2a2a2a;--border2:#333;--text:#f0f0f0;--muted:#666;--muted2:#444;--white:#fff}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+.nav{background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:56px;position:sticky;top:0;z-index:50}
+.logo{font-size:17px;font-weight:700;cursor:pointer;color:var(--white)}
+.logo span{color:var(--muted)}
+.nav-links{display:flex;gap:28px}
+.nav-links a{font-size:13px;color:var(--muted);cursor:pointer;transition:color .15s}
+.nav-links a:hover{color:var(--text)}
+.nav-right{display:flex;gap:20px;align-items:center}
+.nav-icon{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;position:relative;display:flex}
+.nav-icon:hover{color:var(--white)}
+.cnt{position:absolute;top:-5px;right:-5px;background:var(--white);color:#000;font-size:8px;font-weight:700;border-radius:50%;width:13px;height:13px;display:flex;align-items:center;justify-content:center}
+.user-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:6px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.user-btn:hover{background:var(--white);color:#000}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center}
+.overlay.on{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:32px;width:90%;max-width:400px;position:relative}
+.modal h2{font-size:18px;font-weight:700;margin-bottom:4px;color:var(--white)}
+.modal p{font-size:12px;color:var(--muted);margin-bottom:24px}
+.mclose{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin-bottom:6px;text-transform:uppercase}
+.fg input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:10px 12px;font-size:13px;color:var(--white);outline:none;font-family:inherit}
+.fg input:focus{border-color:var(--border2)}
+.fg input::placeholder{color:var(--muted2)}
+.mbtn{width:100%;padding:11px;background:var(--white);color:#000;border:none;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.mbtn:hover{opacity:.85}
+.mbtn:disabled{opacity:.5;cursor:not-allowed}
+.mswitch{text-align:center;margin-top:14px;font-size:12px;color:var(--muted)}
+.mswitch a{color:var(--text);cursor:pointer;text-decoration:underline}
+.merr{color:#f87171;font-size:12px;margin-top:8px;padding:8px 12px;background:rgba(248,113,113,.1);border-radius:4px;display:none}
+.hero{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border)}
+.hero-left{padding:52px 28px;border-right:1px solid var(--border)}
+.h-tag{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.h-tag::before{content:'';display:inline-block;width:20px;height:1px;background:var(--muted)}
+.h-title{font-size:38px;font-weight:700;line-height:1.1;letter-spacing:-1.5px;color:var(--white);margin-bottom:16px}
+.h-title em{color:var(--muted);font-style:normal}
+.h-sub{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:32px;max-width:320px}
+.h-actions{display:flex;gap:10px}
+.btn-w{background:var(--white);color:#000;border:none;padding:11px 24px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-w:hover{opacity:.85}
+.btn-g{background:transparent;color:var(--muted);border:1px solid var(--border2);padding:11px 20px;border-radius:4px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn-g:hover{color:var(--white)}
+.hero-right{display:grid;grid-template-columns:1fr 1fr}
+.h-stat{padding:28px;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
+.h-stat:nth-child(even){border-right:none}
+.h-stat:nth-child(3),.h-stat:nth-child(4){border-bottom:none}
+.h-num{font-size:28px;font-weight:700;letter-spacing:-1px;color:var(--white)}
+.h-label{font-size:11px;color:var(--muted);margin-top:4px}
+.section{padding:28px}
+.sec-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.sec-title{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.sec-more{font-size:11px;color:var(--muted);cursor:pointer}
+.sec-more:hover{color:var(--white)}
+.cats{display:flex;gap:8px;flex-wrap:wrap}
+.cat{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:8px 16px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s}
+.cat:hover,.cat.on{background:var(--white);color:#000;border-color:var(--white)}
+.prods{padding:0 28px 28px}
+.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1px;border:1px solid var(--border)}
+.prod{background:var(--bg);cursor:pointer;transition:background .15s;position:relative}
+.prod:hover{background:var(--bg3)}
+.prod-img{height:160px;display:flex;align-items:center;justify-content:center;font-size:52px;border-bottom:1px solid var(--border)}
+.pbadge{position:absolute;top:10px;left:10px;font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 7px;border-radius:2px}
+.pbadge.sale{background:var(--white);color:#000}
+.pbadge.newb{background:var(--bg4);border:1px solid var(--border2);color:var(--muted)}
+.prod-body{padding:14px}
+.p-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.p-cat{font-size:11px;color:var(--muted);margin-bottom:10px}
+.p-foot{display:flex;align-items:center;justify-content:space-between}
+.p-price{font-size:15px;font-weight:700;color:var(--white)}
+.p-old{font-size:11px;color:var(--muted2);text-decoration:line-through;display:block;font-weight:400}
+.p-add{background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:3px;width:28px;height:28px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.p-add:hover{background:var(--white);color:#000;border-color:var(--white)}
+.cart-panel{position:fixed;top:0;right:-380px;width:360px;height:100vh;background:var(--bg2);border-left:1px solid var(--border);z-index:200;transition:right .25s;display:flex;flex-direction:column}
+.cart-panel.on{right:0}
+.cp-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border)}
+.cp-head h3{font-size:14px;font-weight:700;color:var(--white)}
+.cp-close{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer}
+.cp-close:hover{color:var(--white)}
+.cp-items{flex:1;overflow-y:auto;padding:16px 24px}
+.c-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.c-emoji{width:44px;height:44px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.c-info{flex:1}
+.c-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px}
+.c-price{font-size:12px;color:var(--muted)}
+.c-qty{display:flex;align-items:center;gap:8px;margin-top:6px}
+.qbtn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);width:22px;height:22px;border-radius:3px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+.qbtn:hover{background:var(--white);color:#000}
+.qval{font-size:12px;font-weight:600;min-width:16px;text-align:center;color:var(--text)}
+.c-rm{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:14px;display:flex}
+.c-rm:hover{color:#f87171}
+.cp-foot{padding:20px 24px;border-top:1px solid var(--border)}
+.cp-total{display:flex;justify-content:space-between;margin-bottom:14px}
+.cp-total span{font-size:12px;color:var(--muted)}
+.cp-total strong{font-size:16px;font-weight:700;color:var(--white)}
+.empty-c{text-align:center;padding:48px 0;color:var(--muted)}
+.empty-c i{font-size:36px;margin-bottom:10px;display:block;opacity:.3}
+.ord-ok{text-align:center;padding:8px 0}
+.ord-ok i{font-size:44px;color:var(--white);margin-bottom:12px;display:block}
+.ord-ok h3{font-size:17px;font-weight:700;margin-bottom:6px;color:var(--white)}
+.ord-ok p{font-size:12px;color:var(--muted);line-height:1.6}
+.ord-num{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:10px 20px;margin:14px 0;font-size:16px;font-weight:700;color:var(--white);letter-spacing:2px}
+.udrop{position:relative}
+.udrop-menu{display:none;position:absolute;right:0;top:calc(100%+8px);background:var(--bg2);border:1px solid var(--border2);border-radius:6px;min-width:160px;z-index:99}
+.udrop-menu.on{display:block}
+.udrop-menu a{display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:12px;color:var(--muted);cursor:pointer}
+.udrop-menu a:hover{color:var(--white);background:var(--bg3)}
+.udrop-menu a i{font-size:14px}
+.udrop-menu hr{border:none;border-top:1px solid var(--border);margin:4px 0}
+.prof-wrap{display:grid;grid-template-columns:200px 1fr;border-top:1px solid var(--border)}
+.prof-side{border-right:1px solid var(--border);padding:28px 20px}
+.p-av{width:52px;height:52px;border-radius:4px;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--white);margin-bottom:12px}
+.p-nm{font-size:14px;font-weight:700;color:var(--white);margin-bottom:2px}
+.p-em{font-size:11px;color:var(--muted);margin-bottom:20px;word-break:break-all}
+.pm a{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:3px;font-size:12px;color:var(--muted);cursor:pointer;margin-bottom:2px}
+.pm a:hover,.pm a.on{background:var(--bg3);color:var(--white)}
+.pm a i{font-size:14px}
+.prof-body{padding:28px}
+.prof-body h3{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.ord-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.ord-em{font-size:22px;width:36px}
+.ord-inf strong{font-size:12px;font-weight:600;display:block;color:var(--text)}
+.ord-inf span{font-size:11px;color:var(--muted)}
+.ord-st{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 8px;border-radius:2px;text-transform:uppercase}
+.st-ship{background:var(--bg3);color:var(--muted);border:1px solid var(--border2)}
+.st-done{background:#1a2e1a;color:#4ade80;border:1px solid #2a4a2a}
+.no-ord{text-align:center;padding:40px 0;color:var(--muted);font-size:12px}
+.banner{margin:0 28px 28px;border:1px solid var(--border);border-radius:4px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.ban-txt h3{font-size:15px;font-weight:700;color:var(--white);margin-bottom:4px}
+.ban-txt p{font-size:12px;color:var(--muted)}
+.ban-code{font-size:18px;font-weight:700;letter-spacing:4px;color:var(--white);background:var(--bg3);border:1px solid var(--border2);padding:8px 18px;border-radius:3px}
+.footer{border-top:1px solid var(--border);padding:20px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.f-logo{font-size:14px;font-weight:700;color:var(--white)}
+.f-logo span{color:var(--muted)}
+.f-links{display:flex;gap:20px}
+.f-links a{font-size:11px;color:var(--muted);cursor:pointer}
+.f-links a:hover{color:var(--white)}
+.toastx{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--white);color:#000;padding:10px 20px;border-radius:4px;font-size:12px;font-weight:700;opacity:0;transition:all .25s;pointer-events:none;z-index:999;white-space:nowrap}
+.toastx.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.spinner{width:16px;height:16px;border:2px solid rgba(0,0,0,.2);border-top-color:#000;border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pg{display:none}.pg.on{display:block}
+/* ADMIN */
+.admin-wrap{padding:28px}
+.admin-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.admin-head h2{font-size:16px;font-weight:700;color:var(--white)}
+.admin-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px}
+.astat{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:14px}
+.astat-label{font-size:11px;color:var(--muted);margin-bottom:4px}
+.astat-val{font-size:22px;font-weight:700;color:var(--white)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg3)}
+.av-chip{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--bg4);border:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--text);margin-right:8px}
+.tbl-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.loading-row{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+@media(max-width:640px){.hero{grid-template-columns:1fr}.hero-right{display:none}.h-title{font-size:26px}.nav-links{display:none}.prof-wrap{grid-template-columns:1fr}.prof-side{border-right:none;border-bottom:1px solid var(--border)}.cart-panel{width:100%;right:-100%}}
+</style>
+</head>
+<body>
+
+<!-- AUTH MODAL -->
+<div class="overlay" id="authOv">
+  <div class="modal">
+    <button class="mclose" onclick="closeAuth()"><i class="ti ti-x"></i></button>
+    <div id="lf">
+      <h2>Нэвтрэх</h2><p>Тавтай морил</p>
+      <div class="fg"><label>И-мэйл</label><input id="le" type="email" placeholder="name@mail.com"></div>
+      <div class="fg"><label>Нууц үг</label><input id="lp" type="password" placeholder="••••••••"></div>
+      <div class="merr" id="lerr"></div>
+      <button class="mbtn" id="loginBtn" onclick="doLogin()">Нэвтрэх</button>
+      <div class="mswitch">бүртгэлгүй <a onclick="sw('rf')">Бүртгүүлэх</a></div>
+    </div>
+    <div id="rf" style="display:none">
+      <h2>Бүртгүүлэх</h2><p>Шинэ бүртгэл үүсгэх</p>
+      <div class="fg"><label>Нэр</label><input id="rn" type="text" placeholder="Таны нэр"></div>
+      <div class="fg"><label>И-мэйл</label><input id="re" type="email" placeholder="name@mail.com"></div>
+      <div class="fg"><label>Нууц үг</label><input id="rp" type="password" placeholder="••••••••" oninput="checkPw()"></div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px" id="pwHint"></div>
+      <div class="merr" id="rerr"></div>
+      <button class="mbtn" id="regBtn" onclick="doReg()">Бүртгүүлэх</button>
+      <div class="mswitch">Данс байна уу? <a onclick="sw('lf')">Нэвтрэх</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER SUCCESS -->
+<div class="overlay" id="ordOv">
+  <div class="modal">
+    <div class="ord-ok">
+      <i class="ti ti-circle-check"></i>
+      <h3>Захиалга амжилттай</h3>
+      <div class="ord-num" id="ordNum">#GD-00001</div>
+      <p>Таны захиалгыг хүлээн авлаа.<br>24 цагийн дотор хүргэнэ.</p>
+      <button class="mbtn" style="margin-top:20px" onclick="document.getElementById('ordOv').classList.remove('on')">Үргэлжлүүлэх</button>
+    </div>
+  </div>
+</div>
+
+<!-- CART -->
+<div class="cart-panel" id="cartPanel">
+  <div class="cp-head"><h3>Сагс</h3><button class="cp-close" onclick="toggleCart()"><i class="ti ti-x"></i></button></div>
+  <div class="cp-items" id="cpItems"></div>
+  <div id="cpFoot"></div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="logo" onclick="showPg('home')">hussneeaw<span>.MN</span></div>
+  <div class="nav-links">
+    <a onclick="showPg('home')">Нүүр</a>
+    <a onclick="scrollTo('cats-s')">Ангилал</a>
+    <a onclick="scrollTo('prods-s')">Бараа</a>
+  </div>
+  <div class="nav-right">
+    <button class="nav-icon" onclick="toggleCart()"><i class="ti ti-shopping-bag"></i><span class="cnt" id="cntBadge">0</span></button>
+    <div class="udrop">
+      <button class="user-btn" id="uBtn" onclick="uAction()">Нэвтрэх</button>
+      <div class="udrop-menu" id="uDrop">
+        <a onclick="showPg('profile')"><i class="ti ti-user"></i> Профайл</a>
+        <a onclick="showPg('orders')"><i class="ti ti-package"></i> Захиалгууд</a>
+        <div id="adminMenuItem" style="display:none"><a onclick="showPg('admin')"><i class="ti ti-shield"></i> Admin</a></div>
+        <hr>
+        <a onclick="doLogout()"><i class="ti ti-logout"></i> Гарах</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div class="pg on" id="pg-home">
+  <div class="hero">
+    <div class="hero-left">
+      <div class="h-tag">Шинэ коллекц 2025</div>
+      <h1 class="h-title">Чанарыг<br><em>хар дотор</em><br>хайх хэрэггүй</h1>
+      <p class="h-sub">Миний хамгийн том онлайн дэлгүүр. Хурдан, хурдан, хурдан.</p>
+      <div class="h-actions">
+        <button class="btn-w" onclick="scrollTo('prods-s')">Захиалах</button>
+        <button class="btn-g" onclick="filterCat('SALE')">Хямдрал</button>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="h-stat"><div class="h-num" id="stat-users">0</div><div class="h-label">Хэрэглэгч</div></div>
+      <div class="h-stat"><div class="h-num">4.9★</div><div class="h-label">Үнэлгээ</div></div>
+      <div class="h-stat"><div class="h-num">24ц</div><div class="h-label">Хүргэлт</div></div>
+      <div class="h-stat"><div class="h-num" id="stat-orders">0</div><div class="h-label">Захиалга</div></div>
+    </div>
+  </div>
+  <div class="section" id="cats-s">
+    <div class="sec-row"><div class="sec-title">Ангилал</div><div class="sec-more" onclick="clearFilter()">Бүгд</div></div>
+    <div class="cats" id="catsEl"></div>
+  </div>
+  <div class="prods" id="prods-s">
+    <div class="sec-row" style="margin-bottom:0;padding-bottom:12px;border-bottom:1px solid var(--border)">
+      <div class="sec-title" id="prodsTitle">Бүх бараа</div>
+      <div class="sec-more" id="clrBtn" style="display:none" onclick="clearFilter()">Цэвэрлэх</div>
+    </div>
+    <div class="prod-grid" id="prodsEl"></div>
+  </div>
+  <div class="banner">
+    <div class="ban-txt"><h3>Анхны захиалгадаа 9% хямдрал</h3><p>Промо кодыг ашиглаарай</p></div>
+    <div class="ban-code">hussneeaw9</div>
+    <button class="btn-w" onclick="navigator.clipboard.writeText('GOYO15').catch(()=>{});showToast('Код хуулагдлаа')">Хуулах</button>
+  </div>
+  <footer class="footer">
+    <div class="f-logo">hussneeaw<span>.com</span></div>
+    <div class="f-links"><a>Бидний тухай</a><a>Хүргэлт</a><a>Буцаалт</a></div>
+  </footer>
+</div>
+
+<!-- PROFILE -->
+<div class="pg" id="pg-profile">
+  <div class="prof-wrap">
+    <div class="prof-side">
+      <div class="p-av" id="pAv">?</div>
+      <div class="p-nm" id="pNm">—</div>
+      <div class="p-em" id="pEm">—</div>
+      <div class="pm">
+        <a class="on" onclick="showPg('profile')"><i class="ti ti-user"></i> Мэдээлэл</a>
+        <a onclick="showPg('orders')"><i class="ti ti-package"></i> Захиалгууд</a>
+        <a onclick="doLogout()"><i class="ti ti-logout"></i> Гарах</a>
+      </div>
+    </div>
+    <div class="prof-body">
+      <h3>Миний мэдээлэл</h3>
+      <div class="fg"><label>Нэр</label><input id="eNm" type="text" placeholder="Таны нэр"></div>
+      <div class="fg"><label>И-мэйл</label><input id="eEm" type="email" readonly style="opacity:.4"></div>
+      <div class="fg"><label>Утас</label><input id="ePh" type="text" placeholder="+976 9999-9999"></div>
+      <div class="fg"><label>Хаяг</label><input id="eAd" type="text" placeholder="Улаанбаатар..."></div>
+      <button class="mbtn" style="max-width:160px" onclick="saveProf()">Хадгалах</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDERS -->
+<div class="pg" id="pg-orders">
+  <div class="prof-wrap">
+    <div class="prof-side">
+      <div class="p-av" id="pAv2">?</div>
+      <div class="p-nm" id="pNm2">—</div>
+      <div class="p-em" id="pEm2">—</div>
+      <div class="pm">
+        <a onclick="showPg('profile')"><i class="ti ti-user"></i> Мэдээлэл</a>
+        <a class="on" onclick="showPg('orders')"><i class="ti ti-package"></i> Захиалгууд</a>
+        <a onclick="doLogout()"><i class="ti ti-logout"></i> Гарах</a>
+      </div>
+    </div>
+    <div class="prof-body">
+      <h3>Захиалгын түүх</h3>
+      <div id="ordsList"><div class="no-ord">Уншиж байна...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="pg" id="pg-admin">
+  <div class="admin-wrap">
+    <div class="admin-head">
+      <h2>Admin — Хэрэглэгчид</h2>
+      <button class="btn-w" style="font-size:12px;padding:8px 14px" onclick="loadAdminData()"><i class="ti ti-refresh" style="font-size:13px"></i> Шинэчлэх</button>
+    </div>
+    <div class="admin-stats">
+      <div class="astat"><div class="astat-label">Нийт хэрэглэгч</div><div class="astat-val" id="a-total">—</div></div>
+      <div class="astat"><div class="astat-label">Нийт захиалга</div><div class="astat-val" id="a-orders">—</div></div>
+      <div class="astat"><div class="astat-label">Нийт орлого</div><div class="astat-val" id="a-rev" style="font-size:16px">—</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>#</th><th>Хэрэглэгч</th><th>И-мэйл</th><th>Утас</th><th>Бүртгэсэн</th><th>Захиалга</th></tr></thead>
+        <tbody id="adminTbl"><tr><td colspan="6" class="loading-row">Уншиж байна...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="toastx" id="toastEl"></div>
+
+<script>
+// Firebase init
+const firebaseConfig = {
+  apiKey: "AIzaSyDbjVoMqkrvu4bNnSwTgkZjLdJZc3SPGrk",
+  authDomain: "goyo-shop.firebaseapp.com",
+  projectId: "goyo-shop",
+  storageBucket: "goyo-shop.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "goyo-shop-web"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// ADMIN email — өөрийн email-ийг энд бич
+const ADMIN_EMAIL = 'khosbayr999@gmail.com';
+
+const PRODS = [
+  {id:1,name:'Samsung Galaxy A55',cat:'Электроник',price:899000,old:1100000,emoji:'📱',badge:'SALE'},
+  {id:2,name:'Монгол дель хантааз',cat:'Хувцас',price:129000,old:null,emoji:'👘',badge:'NEW'},
+  {id:3,name:'Wireless чихэвч',cat:'Электроник',price:149000,old:199000,emoji:'🎧',badge:'SALE'},
+  {id:4,name:'Гэрийн хивс',cat:'Гэр ахуй',price:249000,old:null,emoji:'🪵',badge:'NEW'},
+  {id:5,name:'Спортын гутал',cat:'Спорт',price:89000,old:120000,emoji:'👟',badge:'SALE'},
+  {id:6,name:'Механик гар',cat:'Электроник',price:199000,old:null,emoji:'⌨️',badge:'NEW'},
+  {id:7,name:'Цайр бор',cat:'Хоол хүнс',price:25000,old:null,emoji:'🍯',badge:null},
+  {id:8,name:'Йога дэвсгэр',cat:'Спорт',price:69000,old:85000,emoji:'🧘',badge:'SALE'},
+];
+const CATS = ['Электроник','Хувцас','Гэр ахуй','Хоол хүнс','Спорт'];
+
+let currentUser = null;
+let cart = JSON.parse(localStorage.getItem('goyo_cart') || '[]');
+let curCat = null;
+
+// AUTH STATE
+auth.onAuthStateChanged(async u => {
+  currentUser = u;
+  updateUI();
+  if (u) {
+    loadStats();
+  }
+});
+
+function sw(id) {
+  ['lf','rf'].forEach(x => document.getElementById(x).style.display = x === id ? 'block' : 'none');
+  document.getElementById('lerr').style.display = 'none';
+  document.getElementById('rerr').style.display = 'none';
+}
+function openAuth() { document.getElementById('authOv').classList.add('on'); sw('lf'); }
+function closeAuth() { document.getElementById('authOv').classList.remove('on'); }
+function uAction() { if (currentUser) document.getElementById('uDrop').classList.toggle('on'); else openAuth(); }
+document.addEventListener('click', e => { if (!document.querySelector('.udrop').contains(e.target)) document.getElementById('uDrop').classList.remove('on'); });
+
+function checkPw() {
+  const v = document.getElementById('rp').value;
+  document.getElementById('pwHint').textContent = v.length < 6 ? 'Нууц үг хамгийн багадаа 6 тэмдэгт байна' : '';
+}
+
+async function doLogin() {
+  const e = document.getElementById('le').value.trim();
+  const p = document.getElementById('lp').value;
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+  const err = document.getElementById('lerr');
+  err.style.display = 'none';
+  try {
+    await auth.signInWithEmailAndPassword(e, p);
+    closeAuth();
+    showToast('Тавтай морил 👋');
+  } catch(ex) {
+    err.textContent = ex.code === 'auth/wrong-password' || ex.code === 'auth/user-not-found' || ex.code === 'auth/invalid-credential'
+      ? 'И-мэйл эсвэл нууц үг буруу' : 'Алдаа гарлаа: ' + ex.message;
+    err.style.display = 'block';
+  }
+  btn.disabled = false;
+  btn.innerHTML = 'Нэвтрэх';
+}
+
+async function doReg() {
+  const n = document.getElementById('rn').value.trim();
+  const e = document.getElementById('re').value.trim();
+  const p = document.getElementById('rp').value;
+  if (!n || !e || !p) { showToast('Бүх талбар шаардлагатай'); return; }
+  if (p.length < 6) { showToast('Нууц үг хамгийн багадаа 6 тэмдэгт'); return; }
+  const btn = document.getElementById('regBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+  const err = document.getElementById('rerr');
+  err.style.display = 'none';
+  try {
+    const cred = await auth.createUserWithEmailAndPassword(e, p);
+    await cred.user.updateProfile({ displayName: n });
+    // Firestore-д хадгалах
+    await db.collection('users').doc(cred.user.uid).set({
+      name: n, email: e, phone: '', addr: '',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    closeAuth();
+    showToast('Бүртгэл амжилттай 🎉');
+  } catch(ex) {
+    err.textContent = ex.code === 'auth/email-already-in-use'
+      ? 'И-мэйл бүртгэлтэй байна' : 'Алдаа: ' + ex.message;
+    err.style.display = 'block';
+  }
+  btn.disabled = false;
+  btn.innerHTML = 'Бүртгүүлэх';
+}
+
+async function doLogout() {
+  await auth.signOut();
+  showPg('home');
+  showToast('Гарлаа');
+}
+
+function updateUI() {
+  const u = currentUser;
+  document.getElementById('uBtn').textContent = u ? (u.displayName || u.email.split('@')[0]) : 'Нэвтрэх';
+  const isAdmin = u && u.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
+  document.getElementById('adminMenuItem').style.display = isAdmin ? 'block' : 'none';
+}
+
+// CART
+function toggleCart() { document.getElementById('cartPanel').classList.toggle('on'); renderCart(); }
+function addCart(id) {
+  if (!currentUser) { openAuth(); showToast('Нэвтэрч орно уу'); return; }
+  const p = PRODS.find(p => p.id === id);
+  const ex = cart.find(c => c.id === id);
+  if (ex) ex.qty++; else cart.push({ ...p, qty: 1 });
+  saveCart(); showToast(p.name + ' нэмлээ ✓');
+}
+function saveCart() {
+  localStorage.setItem('goyo_cart', JSON.stringify(cart));
+  document.getElementById('cntBadge').textContent = cart.reduce((s, c) => s + c.qty, 0);
+}
+function chQty(id, d) {
+  const it = cart.find(c => c.id === id); if (!it) return;
+  it.qty += d; if (it.qty <= 0) cart = cart.filter(c => c.id !== id);
+  saveCart(); renderCart();
+}
+function renderCart() {
+  const el = document.getElementById('cpItems'), ft = document.getElementById('cpFoot');
+  if (!cart.length) { el.innerHTML = '<div class="empty-c"><i class="ti ti-shopping-bag"></i><div>Сагс хоосон</div></div>'; ft.innerHTML = ''; return; }
+  el.innerHTML = cart.map(c => `<div class="c-item"><div class="c-emoji">${c.emoji}</div><div class="c-info"><div class="c-name">${c.name}</div><div class="c-price">₮${c.price.toLocaleString()}</div><div class="c-qty"><button class="qbtn" onclick="chQty(${c.id},-1)">−</button><span class="qval">${c.qty}</span><button class="qbtn" onclick="chQty(${c.id},1)">+</button></div></div><button class="c-rm" onclick="chQty(${c.id},-99)"><i class="ti ti-x"></i></button></div>`).join('');
+  const tot = cart.reduce((s, c) => s + c.price * c.qty, 0);
+  ft.innerHTML = `<div class="cp-foot"><div class="cp-total"><span>Нийт</span><strong>₮${tot.toLocaleString()}</strong></div><button class="mbtn" onclick="checkout()">Захиалах</button></div>`;
+}
+async function checkout() {
+  if (!currentUser) { openAuth(); return; }
+  const num = 'GD-' + Date.now();
+  const total = cart.reduce((s, c) => s + c.price * c.qty, 0);
+  await db.collection('orders').add({
+    userId: currentUser.uid,
+    userEmail: currentUser.email,
+    userName: currentUser.displayName || '',
+    num, total,
+    items: cart.map(c => ({ id: c.id, name: c.name, price: c.price, qty: c.qty })),
+    status: 'Хүргэлтэнд',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  cart = []; saveCart(); renderCart();
+  document.getElementById('cartPanel').classList.remove('on');
+  document.getElementById('ordNum').textContent = '#' + num;
+  document.getElementById('ordOv').classList.add('on');
+  loadStats();
+}
+
+// PRODUCTS
+function renderCats() {
+  document.getElementById('catsEl').innerHTML = CATS.map(c => `<div class="cat ${curCat === c ? 'on' : ''}" onclick="filterCat('${c}')">${c}</div>`).join('');
+}
+function renderProds() {
+  const list = curCat ? PRODS.filter(p => p.cat === curCat || p.badge === curCat) : PRODS;
+  document.getElementById('prodsTitle').textContent = curCat || 'Бүх бараа';
+  document.getElementById('clrBtn').style.display = curCat ? 'block' : 'none';
+  document.getElementById('prodsEl').innerHTML = list.map(p => `<div class="prod"><div class="prod-img">${p.badge ? `<div class="pbadge ${p.badge === 'NEW' ? 'newb' : 'sale'}">${p.badge}</div>` : ''} ${p.emoji}</div><div class="prod-body"><div class="p-name">${p.name}</div><div class="p-cat">${p.cat}</div><div class="p-foot"><div class="p-price">${p.old ? `<span class="p-old">₮${p.old.toLocaleString()}</span>` : ''} ₮${p.price.toLocaleString()}</div><button class="p-add" onclick="addCart(${p.id})" aria-label="Нэмэх"><i class="ti ti-plus"></i></button></div></div></div>`).join('');
+}
+function filterCat(c) { curCat = curCat === c ? null : c; renderCats(); renderProds(); scrollTo('prods-s'); }
+function clearFilter() { curCat = null; renderCats(); renderProds(); }
+
+// STATS
+async function loadStats() {
+  try {
+    const usSnap = await db.collection('users').get();
+    const orSnap = await db.collection('orders').get();
+    document.getElementById('stat-users').textContent = usSnap.size + '+';
+    document.getElementById('stat-orders').textContent = orSnap.size + '+';
+  } catch(e) {}
+}
+
+// PROFILE
+async function loadProf() {
+  if (!currentUser) return;
+  const doc = await db.collection('users').doc(currentUser.uid).get();
+  const u = doc.exists ? doc.data() : { name: currentUser.displayName || '', email: currentUser.email, phone: '', addr: '' };
+  const nm = u.name || currentUser.displayName || '';
+  ['', '2'].forEach(s => {
+    const a = document.getElementById('pAv' + s);
+    const n = document.getElementById('pNm' + s);
+    const e = document.getElementById('pEm' + s);
+    if (a) a.textContent = nm.charAt(0).toUpperCase() || '?';
+    if (n) n.textContent = nm;
+    if (e) e.textContent = currentUser.email;
+  });
+  document.getElementById('eNm').value = nm;
+  document.getElementById('eEm').value = currentUser.email;
+  document.getElementById('ePh').value = u.phone || '';
+  document.getElementById('eAd').value = u.addr || '';
+}
+async function saveProf() {
+  if (!currentUser) return;
+  const nm = document.getElementById('eNm').value;
+  await db.collection('users').doc(currentUser.uid).set({
+    name: nm,
+    email: currentUser.email,
+    phone: document.getElementById('ePh').value,
+    addr: document.getElementById('eAd').value,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+  await currentUser.updateProfile({ displayName: nm });
+  updateUI(); loadProf(); showToast('Хадгалагдлаа ✓');
+}
+
+// ORDERS
+async function loadOrders() {
+  const el = document.getElementById('ordsList');
+  el.innerHTML = '<div class="no-ord">Уншиж байна...</div>';
+  if (!currentUser) return;
+  try {
+    const snap = await db.collection('orders').where('userId', '==', currentUser.uid).get();
+    if (snap.empty) { el.innerHTML = '<div class="no-ord">Захиалга байхгүй байна</div>'; return; }
+    el.innerHTML = snap.docs.map(d => {
+      const o = d.data();
+      const date = o.createdAt ? new Date(o.createdAt.seconds * 1000).toLocaleDateString('mn-MN') : '—';
+      return `<div class="ord-row"><div class="ord-em">📦</div><div class="ord-inf"><strong>#${o.num} — ${(o.items||[]).length} бараа</strong><span>${date} · ₮${(o.total||0).toLocaleString()}</span></div><div class="ord-st ${o.status === 'Хүргэсэн' ? 'st-done' : 'st-ship'}">${o.status}</div></div>`;
+    }).join('');
+  } catch(e) { el.innerHTML = '<div class="no-ord">Алдаа гарлаа</div>'; }
+}
+
+// ADMIN
+async function loadAdminData() {
+  if (!currentUser || currentUser.email.toLowerCase().trim() !== ADMIN_EMAIL.toLowerCase().trim()) return;
+  document.getElementById('adminTbl').innerHTML = '<tr><td colspan="6" class="loading-row">Уншиж байна...</td></tr>';
+  
+  // Эхлээд өөрийн мэдээллийг уншиж чадах эсэхийг шалгах
+  try {
+    await db.collection('users').doc(currentUser.uid).get();
+  } catch(e) {
+    // Rules хаалттай байна — заавар харуулна
+    document.getElementById('adminTbl').innerHTML = `
+      <tr><td colspan="6" style="padding:24px">
+        <div style="background:#1a1a1a;border:1px solid #333;border-radius:6px;padding:20px;font-size:13px;line-height:1.8">
+          <div style="font-weight:700;color:#fff;margin-bottom:12px">⚠️ Firebase Rules тохируулах шаардлагатай</div>
+          <div style="color:#aaa;margin-bottom:16px">Доорх алхмуудыг дагаарай:</div>
+          <div style="color:#e0e0e0">
+            1. <a href="https://console.firebase.google.com/project/goyo-shop/firestore/rules" target="_blank" style="color:#60a5fa">Firebase Console → Firestore → Rules</a> руу ор<br>
+            2. Бүх текстийг устгаад доорхыг хуулж тавь:<br>
+          </div>
+          <div style="background:#0a0a0a;border:1px solid #2a2a2a;border-radius:4px;padding:12px;margin:12px 0;font-family:monospace;font-size:12px;color:#4ade80">
+rules_version = '2';<br>
+service cloud.firestore {<br>
+&nbsp;&nbsp;match /databases/{database}/documents {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;match /{document=**} {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;allow read, write: if true;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;}<br>
+}
+          </div>
+          <div style="color:#e0e0e0">3. <strong>Publish</strong> товч дараад энд буцаж ир</div>
+          <button onclick="loadAdminData()" style="margin-top:16px;padding:8px 20px;background:#fff;color:#000;border:none;border-radius:4px;font-weight:700;cursor:pointer;font-size:13px">🔄 Дахин оролдох</button>
+        </div>
+      </td></tr>`;
+    return;
+  }
+
+  try {
+    const uSnap = await db.collection('users').get();
+    const oSnap = await db.collection('orders').get();
+    const totalRev = oSnap.docs.reduce((s, d) => s + (d.data().total || 0), 0);
+    document.getElementById('a-total').textContent = uSnap.size;
+    document.getElementById('a-orders').textContent = oSnap.size;
+    document.getElementById('a-rev').textContent = '₮' + totalRev.toLocaleString();
+
+    const ordCounts = {};
+    oSnap.docs.forEach(d => { const uid = d.data().userId; ordCounts[uid] = (ordCounts[uid] || 0) + 1; });
+
+    if (uSnap.empty) {
+      document.getElementById('adminTbl').innerHTML = '<tr><td colspan="6" class="loading-row">Хэрэглэгч байхгүй байна</td></tr>';
+      return;
+    }
+    document.getElementById('adminTbl').innerHTML = uSnap.docs.map((d, i) => {
+      const u = d.data();
+      const date = u.createdAt ? new Date(u.createdAt.seconds * 1000).toLocaleDateString('mn-MN') : '—';
+      const nm = u.name || '—';
+      const init = nm.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+      return `<tr>
+        <td style="color:var(--muted)">${i + 1}</td>
+        <td><span class="av-chip">${init}</span>${nm}</td>
+        <td style="color:var(--muted);font-size:12px">${u.email || '—'}</td>
+        <td style="color:var(--muted);font-size:12px">${u.phone || '—'}</td>
+        <td style="color:var(--muted);font-size:12px">${date}</td>
+        <td style="font-weight:600">${ordCounts[d.id] || 0}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    console.error('Admin error:', e);
+    document.getElementById('adminTbl').innerHTML = `<tr><td colspan="6" class="loading-row">Алдаа: ${e.message}</td></tr>`;
+  }
+}
+
+// PAGES
+function showPg(n) {
+  if ((n === 'profile' || n === 'orders' || n === 'admin') && !currentUser) { openAuth(); return; }
+  if (n === 'admin' && (!currentUser || currentUser.email.toLowerCase().trim() !== ADMIN_EMAIL.toLowerCase().trim())) { showToast('Зөвшөөрөл байхгүй: ' + (currentUser ? currentUser.email : 'нэвтрээгүй')); return; }
+  document.querySelectorAll('.pg').forEach(p => p.classList.remove('on'));
+  document.getElementById('pg-' + n).classList.add('on');
+  window.scrollTo(0, 0);
+  document.getElementById('uDrop').classList.remove('on');
+  if (n === 'profile') loadProf();
+  if (n === 'orders') { loadProf(); loadOrders(); }
+  if (n === 'admin') loadAdminData();
+}
+function scrollTo(id) {
+  showPg('home');
+  setTimeout(() => document.getElementById(id).scrollIntoView({ behavior: 'smooth' }), 50);
+}
+function showToast(msg) {
+  const t = document.getElementById('toastEl');
+  t.textContent = msg; t.classList.add('on');
+  setTimeout(() => t.classList.remove('on'), 2200);
+}
+
+// INIT
+saveCart(); renderCats(); renderProds(); loadStats();
+</script>
+</body>
+</html>
